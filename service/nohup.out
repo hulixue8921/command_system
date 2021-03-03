@@ -1,0 +1,13 @@
+Use of uninitialized value in hash element at Api/Fabu/Fabu.pm line 100, <Read> line 12.
+Use of uninitialized value in hash element at Api/Fabu/Fabu.pm line 102, <Read> line 12.
+Use of uninitialized value in hash element at Api/Fabu/Fabu.pm line 104, <Read> line 12.
+Use of uninitialized value in hash element at gateway.pl line 62.
+Use of uninitialized value in hash element at gateway.pl line 62.
+Can't call method "put" on an undefined value at MySocket/BindEvent.pm line 72.
+=== 2183 === !!! Kernel has 1 child process(es).
+=== 2183 === !!! At least one child process is still running when POE::Kernel->run() is ready to return.
+=== 2183 === !!! Be sure to use sig_child() to reap child processes.
+=== 2183 === !!! In extreme cases, failure to reap child processes has
+=== 2183 === !!! resulted in a slow 'fork bomb' that has halted systems.
+Can't call method "put" on an undefined value at MySocket/BindEvent.pm line 72.
+Can't call method "put" on an undefined value at MySocket/BindEvent.pm line 72.

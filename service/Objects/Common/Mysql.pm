@@ -33,6 +33,7 @@ sub new {
     my $port     = $config->getValue( 'Mysql', 'Port' );
     my $conn     = $config->getValue( 'Mysql', 'connects' );
     my $reconn   = $config->getValue( 'Mysql', 'reconnect' );
+    my $cons     = [];
 
     die "$ARGV[0] config 配置文件有错误 ！！！"
       unless $username
@@ -43,16 +44,43 @@ sub new {
           && $conn
           && $reconn;
 
-    bless {
-        cons     => [],
-        username => $username,
-        passwd   => $passwd,
-        db       => $db,
-        host     => $host,
-          port   => $port,
-        conn   => $conn,
-        reconn => $reconn
-    }, $class;
+    my $add = sub {
+        my $dsn = "DBI:mysql:database=$db;host=$host;port=$port";
+        my $dbh =
+          DBI->connect( $dsn, $username, $passwd,
+            { RaiseError => 0, AutoCommit => 0 } );
+        $dbh->do("SET NAMES utf8");
+        push @$cons, $dbh;
+
+    };
+
+    for ( my $a = 0 ; $a < $conn ; $a = $a + 1 ) {
+        $add->();
+    }
+
+    POE::Session->create(
+        inline_states => {
+            _start => sub {
+                $poe_kernel->alarm_add( check => time() + $reconn );
+            },
+            check => sub {
+                foreach my $i ( sort { $a < $b } ( 0 .. $#{$cons} ) ) {
+                    my $r = eval { $cons->[$i]->ping };
+                    if ( $r and $r eq 1 ) {
+                    }
+                    else {
+                        $cons->[$i]->commit;
+                        splice @$cons, $i, 1;
+                        $add->();
+                    }
+                }
+                $poe_kernel->alarm_add( '_start' => time() + $reconn );
+            },
+
+        }
+    );
+
+    bless { cons => $cons, }, $class;
 
 }
 
@@ -65,60 +93,6 @@ sub put {
     my $self = shift;
     my $dbh  = shift;
     push @{ $self->{cons} }, $dbh;
-}
-
-sub delete {
-    my $self  = shift;
-    my $index = shift;
-    splice @{ $self->{cons} }, $index, 1;
-}
-
-sub add {
-    my $self = shift;
-    my $conn = shift;
-    push @{ $self->{cons} }, $conn;
-}
-
-sub pool {
-    my $self      = shift;
-    my $sessionid = shift;
-
-    my $dsn =
-      "DBI:mysql:database=$self->{db};host=$self->{host};port=$self->{port}";
-
-    while ( $self->{conn} > 0 ) {
-        my $dbh =
-          DBI->connect( $dsn, $self->{username}, $self->{passwd},
-            { RaiseError => 0, AutoCommit => 0 } );
-        $dbh->do("SET NAMES utf8");
-        if ($dbh) {
-            $self->add($dbh);
-            $self->{conn}--;
-        }
-    }
-
-    $poe_kernel->yield('mysqlping');
-}
-
-sub defendPool {
-    my $self = shift;
-    foreach my $i ( sort { $a < $b } ( 0 .. $#{ $self->{cons} } ) ) {
-        my $r = eval { $self->{cons}->[$i]->ping };
-        if ( $r and $r eq 1 ) {
-        }
-        else {
-            $self->{cons}->[$i]->commit;
-            $self->delete($i);
-        }
-    }
-
-    if ( $#{ $self->{cons} } < 4 ) {
-        $self->{conn} = 4 - $#{ $self->{cons} };
-        $poe_kernel->alarm_add( '_start' => time() + $self->{reconn} );
-    }
-    else {
-        $poe_kernel->alarm_add( mysqlping => time() + $self->{reconn} );
-    }
 }
 
 1

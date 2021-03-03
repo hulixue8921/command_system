@@ -1,0 +1,45 @@
+
+There is no previous '?' to match a ':' on line 1
+1: [Sys1]:
+         ^
+
+3: Sys_log=/root/project/service/logs/service.log
+   ^                                             
+found bareword where operator expected
+
+Missing ';' above?
+3:	
+Partial match to quote modifier [cgimosxp] at word: 'project'
+Please put a space between quote modifiers and trailing keywords.
+4:	
+Partial match to quote modifier [cgimosxp] at word: 'project'
+Please put a space between quote modifiers and trailing keywords.
+
+There is no previous '?' to match a ':' on line 5
+5: [Mysql]:
+          ^
+
+7: Port=3306
+   ^        
+found bareword where operator expected
+
+Missing ';' above?
+
+8: UserName=root
+   ^            
+found bareword where operator expected
+
+Missing ';' above?
+
+10: DB=hulixue
+    ^         
+found bareword where operator expected
+
+Missing ';' above?
+
+12: reconnect=5
+    ^          
+found bareword where operator expected
+
+Missing ';' above?
+12:	To save a full .LOG file rerun with -g

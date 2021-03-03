@@ -1,0 +1,5 @@
+[Sys1] : ListenPort = 8000 Sys_log =
+  /root/project / service / logs / service . log Sys_log_config =
+  /root/project / service / etc / log . conf [Mysql] : HostIp = 127.0.0.1 Port =
+  3306 UserName = root PassWord = 12345678 DB = hulixue connects = 5 reconnect =
+  5
