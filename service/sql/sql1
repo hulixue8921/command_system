@@ -1,0 +1,5 @@
+
+
+create table IF NOT EXISTS `role_cmdb` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(20),`jq` varchar(1) not null default '0' comment '机器' , `mysql` varchar(1) not null default '0',`redis` varchar(1) not null default '0',`mongodb` varchar(1) not null default '0', `mq` varchar(1) not null default '0', `kafka`varchar(1) not null default '0', `cx` varchar(1) not null default '0' comment '程序',`admin` varchar(1) not null default '0', PRIMARY KEY (`id`), UNIQUE key (`name`)) engine=INNODB  DEFAULT CHARSET=utf8;
+
+insert into role_cmdb (`id` , `name`) values(0, 'anonymous');

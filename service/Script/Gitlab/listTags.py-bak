@@ -1,0 +1,32 @@
+import gitlab
+import json
+import sys
+
+hubs = dict()
+hubs["soundsright-gateway"] = "lyrra/soundright-gateway"
+hubs["api-service"] = "node/api-service"
+hubs["fe"] = "node/fe-service"
+hubs["fingernft-admin-farm"] = "chain/lyrra-mvp-nft-admin"
+hubs["fingernft-api-farm"] = "chain/lyrra-mvp-nft-market"
+hubs["lyrra-club"] = "show/lyrra_club"
+hubs["soundsright-authorization"] = "lyrra/soundsright-authorization"
+hubs["soundsright-file"] = "lyrra/soundsright-file"
+hubs["soundsright-generate"] = "lyrra/soundsright-generate"
+hubs["soundsright-picgen"] = "lyrra/soundright-picgen"
+hubs["soundsright-settlement"] = "lyrra/soundsright-settlement"
+hubs["soundsright-system"] = "lyrra/soundsright-system"
+hubs["soundsright-transcoding"] = "lyrra/soundsright-transcoding"
+hubs["soundsright-ucenter"] = "lyrra/soundright-ucenter"
+hubs["soundsright-unified-pay"] = "lyrra/soundsright_unified_pay"
+hubs["soundsright-website"] = "lyrra/lyrra-website"
+hubs["soundsright-pay"] = "lyrra/soundright-pay"
+
+res = {'code': '200', 'data': {'data': []}}
+gl = gitlab.Gitlab(sys.argv[1], sys.argv[2])
+lists = gl.projects.get(hubs[sys.argv[3]]).tags.list()
+git = gl.projects.get(hubs[sys.argv[3]]).ssh_url_to_repo
+for l in lists:
+  res['data']['data'].append({'tagName': l.name, 'tagMessage': l.message, 'git': git})
+
+print(json.dumps(res))
+

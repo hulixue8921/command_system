@@ -1,0 +1,2 @@
+create table IF NOT EXISTS `cmdb_jq` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(20),`project` varchar(20) ,`admin` varchar(10) not null default 'root',`passwd` varchar(60), `ip` varchar(20) ,`location` varchar(20),`bindip` varchar(20) not null default 0 , `type` varchar(10) comment '服务器类型', `cpu` int(1) not null default 1, `memG` int (4) not null default 0 , `diskG` int(4) not null default 0 , PRIMARY KEY (`id`), UNIQUE key (`location`,`ip`,`type` , `name`)) engine=INNODB  DEFAULT CHARSET=utf8;
+

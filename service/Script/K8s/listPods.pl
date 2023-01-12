@@ -1,0 +1,126 @@
+#!/usr/bin/env perl
+#===============================================================================
+#
+#         FILE: 1.pl
+#
+#        USAGE: ./1.pl
+#
+#  DESCRIPTION: i
+#
+#      OPTIONS: ---
+# REQUIREMENTS: ---
+#         BUGS: ---
+#        NOTES: ---
+#       AUTHOR: hlx (), hulixue@xiankan.com
+# ORGANIZATION:
+#      VERSION: 1.0
+#      CREATED: 2022年10月28日 11时02分59秒
+#     REVISION: ---
+#===============================================================================
+
+use strict;
+use warnings;
+use utf8;
+use 5.010;
+use JSON;
+use LWP::UserAgent;
+
+my $Data = { code => '200', data => { data => [] } };
+my $json = JSON->new->utf8->allow_nonref;
+my $urls = {
+    'lyrra-k8s-dev' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'lyrra-k8s-test' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'lyrra-k8s-pre' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'lyrra-k8s-prod' =>
+      'http://172.20.2.243:8080/api/v1/namespaces/default/pods',
+    'fu-k8s-dev' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'fu-k8s-test' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'fu-k8s-pre' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'fu-k8s-prod' =>
+      'http://172.20.2.243:8080/api/v1/namespaces/default/pods',
+    'show-k8s-dev' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'show-k8s-test' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'show-k8s-pre' =>
+      'http://172.100.2.204:8080/api/v1/namespaces/default/pods',
+    'show-k8s-prod' =>
+      'http://172.20.2.243:8080/api/v1/namespaces/default/pods',
+};
+
+my $url = $urls->{ $ARGV[0] };
+my $ua  = LWP::UserAgent->new(
+    protocols_allowed => ['http'],
+    timeout           => 30,
+    ssl_opts          => { verify_hostname => 0 },
+);
+
+my $res = $ua->get($url)->content;
+
+sub hand {
+    my $i = shift;
+
+    my $podName  = $i->{metadata}->{name};
+    my $podName1 = $i->{status}->{containerStatuses}->[0]->{name};
+    my $podIp    = $i->{status}->{podIP};
+    my $hostIp   = $i->{status}->{hostIP};
+    my $image    = $i->{status}->{containerStatuses}->[0]->{image};
+    my $restartCount =
+      $i->{status}->{containerStatuses}->[0]->{restartCount};
+    my $status =
+      $i->{status}->{containerStatuses}->[0]->{state}->{running}
+      ? 'running'
+      : 'fail';
+    my $startTime =
+        $i->{status}->{containerStatuses}->[0]->{state}->{running}
+      ? $i->{status}->{containerStatuses}->[0]->{state}->{running}->{startedAt}
+      : '';
+    my @x = split ':', $image;
+    my $data = {
+        podName      => $podName,
+        serviceName  => $podName1,
+        podIp        => $podIp,
+        hostIp       => $hostIp,
+        tag          => $x[2],
+        restartCount => $restartCount,
+        status       => $status,
+        startTime    => $startTime,
+    };
+    push $Data->{data}->{data}, $data;
+}
+
+foreach my $i ( @{ $json->decode($res)->{items} } ) {
+    my $podName  = $i->{metadata}->{name};
+    my $podName1 = $i->{status}->{containerStatuses}->[0]->{name};
+    my @x        = split '-', $ARGV[0];
+    if ( ( $podName1 =~ /$x[2]$/ or $podName1 =~ /^internal/ )
+        and $x[0] eq 'lyrra' )
+    {
+        if (   $podName1 =~ /^soundsright/
+            or $podName1 =~ /^fingernft/
+            or $podName1 =~ /^api/
+            or $podName1 =~ /^fe/
+            or $podName1 =~ /^internal/
+            )
+        {
+            &hand($i);
+        }
+    }
+    elsif ( $x[0] eq 'fu' and $podName1 =~ /$x[2]$/ ) {
+        if ( $podName1 =~ /^futuremusic/ ) {
+            &hand($i);
+        }
+    } elsif ($x[0] eq 'show' and $podName1 =~ /$x[2]$/) {
+        if ( $podName1 =~ /^lyrra-club/) {
+            &hand($i);
+        }
+    }
+}
+
+say $json->encode($Data);
